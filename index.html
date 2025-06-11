@@ -1,0 +1,1164 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Integrales Avanzada</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.11.0/math.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.24.1/plotly.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            padding: 30px;
+        }
+
+        .input-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .input-section h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            font-family: 'Courier New', monospace;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 15px rgba(52, 152, 219, 0.2);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(52, 152, 219, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        }
+
+        .buttons-container {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .function-buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin: 15px 0;
+        }
+
+        .function-buttons button {
+            padding: 8px 12px;
+            font-size: 14px;
+            border-radius: 8px;
+        }
+
+        .output-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .result-container {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            border-left: 4px solid #3498db;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            min-height: 100px;
+            overflow-x: auto;
+        }
+
+        .result-title {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .error {
+            background: #ffe6e6;
+            border-left-color: #e74c3c;
+            color: #c0392b;
+        }
+
+        .success {
+            background: #e8f5e8;
+            border-left-color: #27ae60;
+            color: #1e7e34;
+        }
+
+        .graph-container {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            grid-column: 1 / -1;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 10px 10px 0 0;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+            border: none;
+            font-weight: 600;
+        }
+
+        .tab.active {
+            background: #3498db;
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .method-selector {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+
+        .method-btn {
+            padding: 8px 15px;
+            border: 2px solid #3498db;
+            background: white;
+            color: #3498db;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .method-btn.active {
+            background: #3498db;
+            color: white;
+        }
+
+        .step-by-step {
+            background: #f0f8ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .step {
+            margin: 10px 0;
+            padding: 8px 12px;
+            background: white;
+            border-radius: 5px;
+            border-left: 3px solid #3498db;
+        }
+
+        .formula-display {
+            font-size: 18px;
+            text-align: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin: 15px 0;
+            font-family: 'Times New Roman', serif;
+        }
+
+        .examples {
+            background: #fff9e6;
+            border: 1px solid #ffcc00;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .examples h4 {
+            color: #b8860b;
+            margin-bottom: 10px;
+        }
+
+        .example-item {
+            margin: 5px 0;
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 5px;
+            transition: background 0.3s ease;
+        }
+
+        .example-item:hover {
+            background: rgba(255, 204, 0, 0.1);
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 20px;
+                padding: 20px;
+            }
+           
+            .function-buttons {
+                grid-template-columns: repeat(3, 1fr);
+            }
+           
+            .buttons-container {
+                justify-content: center;
+            }
+           
+            .method-selector {
+                justify-content: center;
+            }
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .math-input {
+            position: relative;
+        }
+
+        .math-preview {
+            background: #f0f8ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 5px;
+            padding: 10px;
+            margin-top: 5px;
+            font-family: 'Times New Roman', serif;
+            font-size: 16px;
+            min-height: 40px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧮 Calculadora de Integrales Avanzada</h1>
+            <p>Calcula integrales definidas e indefinidas con métodos numéricos y simbólicos</p>
+        </div>
+
+        <div class="main-content">
+            <div class="input-section">
+                <h3>🔧 Configuración de la Integral</h3>
+               
+                <div class="tabs">
+                    <button class="tab active" onclick="switchTab('definite')">Integral Definida</button>
+                    <button class="tab" onclick="switchTab('indefinite')">Integral Indefinida</button>
+                </div>
+
+                <div id="definite-tab" class="tab-content active">
+                    <div class="form-group">
+                        <label for="function-input">Función f(x):</label>
+                        <div class="math-input">
+                            <input type="text" id="function-input" class="form-control"
+                                   placeholder="Ej: x^2 + sin(x)" value="x^2">
+                            <div id="function-preview" class="math-preview"></div>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div class="form-group">
+                            <label for="lower-limit">Límite inferior (a):</label>
+                            <input type="number" id="lower-limit" class="form-control"
+                                   value="0" step="any">
+                        </div>
+                        <div class="form-group">
+                            <label for="upper-limit">Límite superior (b):</label>
+                            <input type="number" id="upper-limit" class="form-control"
+                                   value="2" step="any">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Método de cálculo:</label>
+                        <div class="method-selector">
+                            <button class="method-btn active" data-method="symbolic">Simbólico</button>
+                            <button class="method-btn" data-method="trapezoidal">Trapezoidal</button>
+                            <button class="method-btn" data-method="simpson">Simpson</button>
+                            <button class="method-btn" data-method="monte-carlo">Monte Carlo</button>
+                        </div>
+                    </div>
+
+                    <div class="form-group" id="precision-group">
+                        <label for="precision">Subdivisiones (n):</label>
+                        <input type="number" id="precision" class="form-control"
+                               value="1000" min="10" max="100000">
+                    </div>
+                </div>
+
+                <div id="indefinite-tab" class="tab-content">
+                    <div class="form-group">
+                        <label for="function-input-indef">Función f(x):</label>
+                        <div class="math-input">
+                            <input type="text" id="function-input-indef" class="form-control"
+                                   placeholder="Ej: x^2 + sin(x)" value="x^2">
+                            <div id="function-preview-indef" class="math-preview"></div>
+                        </div>
+                    </div>
+                   
+                    <div class="form-group">
+                        <label for="integration-variable">Variable de integración:</label>
+                        <input type="text" id="integration-variable" class="form-control"
+                               value="x" maxlength="1">
+                    </div>
+                </div>
+
+                <div class="function-buttons">
+                    <button class="btn btn-secondary" onclick="insertFunction('sin(')">sin</button>
+                    <button class="btn btn-secondary" onclick="insertFunction('cos(')">cos</button>
+                    <button class="btn btn-secondary" onclick="insertFunction('tan(')">tan</button>
+                    <button class="btn btn-secondary" onclick="insertFunction('ln(')">ln</button>
+                    <button class="btn btn-secondary" onclick="insertFunction('log(')">log</button>
+                    <button class="btn btn-secondary" onclick="insertFunction('exp(')">exp</button>
+                    <button class="btn btn-secondary" onclick="insertFunction('sqrt(')">√</button>
+                    <button class="btn btn-secondary" onclick="insertFunction('^')">^</button>
+                    <button class="btn btn-secondary" onclick="insertFunction('abs(')">|x|</button>
+                    <button class="btn btn-secondary" onclick="insertFunction('(')">)</button>
+                    <button class="btn btn-secondary" onclick="insertFunction(')')">(</button>
+                    <button class="btn btn-secondary" onclick="insertFunction('pi')">π</button>
+                </div>
+
+                <div class="examples">
+                    <h4>💡 Ejemplos:</h4>
+                    <div class="example-item" onclick="setExample('x^2', 0, 2)">∫₀² x² dx</div>
+                    <div class="example-item" onclick="setExample('sin(x)', 0, 'pi')">∫₀^π sin(x) dx</div>
+                    <div class="example-item" onclick="setExample('exp(-x^2)', -2, 2)">∫₋₂² e^(-x²) dx</div>
+                    <div class="example-item" onclick="setExample('1/(1+x^2)', -1, 1)">∫₋₁¹ 1/(1+x²) dx</div>
+                    <div class="example-item" onclick="setExample('x*sin(x)', 0, 'pi')">∫₀^π x·sin(x) dx</div>
+                </div>
+
+                <div class="buttons-container">
+                    <button class="btn btn-success" onclick="calculateIntegral()">
+                        🧮 Calcular Integral
+                    </button>
+                    <button class="btn btn-warning" onclick="generateGraph()">
+                        📊 Graficar
+                    </button>
+                    <button class="btn btn-danger" onclick="clearAll()">
+                        🗑️ Limpiar
+                    </button>
+                </div>
+            </div>
+
+            <div class="output-section">
+                <h3>📊 Resultados</h3>
+               
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p>Calculando integral...</p>
+                </div>
+
+                <div id="result-area">
+                    <div class="formula-display" id="integral-formula">
+                        ∫ f(x) dx
+                    </div>
+
+                    <div class="result-container" id="main-result">
+                        <div class="result-title">Resultado:</div>
+                        <div>Ingresa una función y presiona "Calcular Integral"</div>
+                    </div>
+
+                    <div class="result-container" id="steps-result" style="display: none;">
+                        <div class="result-title">Pasos de resolución:</div>
+                        <div id="solution-steps"></div>
+                    </div>
+
+                    <div class="result-container" id="numerical-comparison" style="display: none;">
+                        <div class="result-title">Comparación de métodos numéricos:</div>
+                        <div id="methods-comparison"></div>
+                    </div>
+
+                    <div class="result-container" id="error-analysis" style="display: none;">
+                        <div class="result-title">Análisis de error:</div>
+                        <div id="error-details"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="graph-container">
+            <h3>📈 Visualización Gráfica</h3>
+            <div id="function-plot" style="width: 100%; height: 500px;"></div>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let currentMethod = 'symbolic';
+        let currentTab = 'definite';
+        let lastFunction = '';
+       
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCalculator();
+            setupEventListeners();
+            updateFunctionPreview();
+        });
+
+        function initializeCalculator() {
+            // Configurar métodos de integración
+            document.querySelectorAll('.method-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.method-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    currentMethod = this.dataset.method;
+                   
+                    // Mostrar/ocultar campo de precisión según el método
+                    const precisionGroup = document.getElementById('precision-group');
+                    if (currentMethod === 'symbolic') {
+                        precisionGroup.style.display = 'none';
+                    } else {
+                        precisionGroup.style.display = 'block';
+                    }
+                });
+            });
+        }
+
+        function setupEventListeners() {
+            // Listeners para actualizar preview de función
+            document.getElementById('function-input').addEventListener('input', updateFunctionPreview);
+            document.getElementById('function-input-indef').addEventListener('input', updateFunctionPreview);
+           
+            // Listeners para actualizar límites
+            document.getElementById('lower-limit').addEventListener('change', updateIntegralFormula);
+            document.getElementById('upper-limit').addEventListener('change', updateIntegralFormula);
+           
+            // Trigger inicial
+            updateIntegralFormula();
+        }
+
+        function switchTab(tabName) {
+            currentTab = tabName;
+           
+            // Actualizar tabs
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+           
+            document.querySelector(`[onclick="switchTab('${tabName}')"]`).classList.add('active');
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+           
+            updateFunctionPreview();
+            updateIntegralFormula();
+        }
+
+        function updateFunctionPreview() {
+            const isDefinite = currentTab === 'definite';
+            const input = document.getElementById(isDefinite ? 'function-input' : 'function-input-indef');
+            const preview = document.getElementById(isDefinite ? 'function-preview' : 'function-preview-indef');
+           
+            const func = input.value || 'f(x)';
+            preview.textContent = `f(x) = ${formatMathExpression(func)}`;
+        }
+
+        function updateIntegralFormula() {
+            const formulaDisplay = document.getElementById('integral-formula');
+           
+            if (currentTab === 'definite') {
+                const func = document.getElementById('function-input').value || 'f(x)';
+                const a = document.getElementById('lower-limit').value || 'a';
+                const b = document.getElementById('upper-limit').value || 'b';
+                formulaDisplay.innerHTML = `∫<sub>${a}</sub><sup>${b}</sup> ${formatMathExpression(func)} dx`;
+            } else {
+                const func = document.getElementById('function-input-indef').value || 'f(x)';
+                const variable = document.getElementById('integration-variable').value || 'x';
+                formulaDisplay.innerHTML = `∫ ${formatMathExpression(func)} d${variable}`;
+            }
+        }
+
+        function formatMathExpression(expr) {
+            return expr
+                .replace(/\^/g, '<sup>')
+                .replace(/\(/g, '</sup>(')
+                .replace(/pi/g, 'π')
+                .replace(/sqrt/g, '√')
+                .replace(/infinity/g, '∞');
+        }
+
+        function insertFunction(func) {
+            const isDefinite = currentTab === 'definite';
+            const input = document.getElementById(isDefinite ? 'function-input' : 'function-input-indef');
+           
+            const cursorPos = input.selectionStart;
+            const textBefore = input.value.substring(0, cursorPos);
+            const textAfter = input.value.substring(cursorPos);
+           
+            input.value = textBefore + func + textAfter;
+            input.focus();
+            input.setSelectionRange(cursorPos + func.length, cursorPos + func.length);
+           
+            updateFunctionPreview();
+            updateIntegralFormula();
+        }
+
+        function setExample(func, a, b) {
+            if (currentTab === 'indefinite') {
+                switchTab('definite');
+            }
+           
+            document.getElementById('function-input').value = func;
+            document.getElementById('lower-limit').value = a;
+            document.getElementById('upper-limit').value = b;
+           
+            updateFunctionPreview();
+            updateIntegralFormula();
+        }
+
+        async function calculateIntegral() {
+            showLoading(true);
+            clearResults();
+           
+            try {
+                if (currentTab === 'definite') {
+                    await calculateDefiniteIntegral();
+                } else {
+                    await calculateIndefiniteIntegral();
+                }
+            } catch (error) {
+                showError('Error en el cálculo: ' + error.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function calculateDefiniteIntegral() {
+            const func = document.getElementById('function-input').value;
+            const a = parseFloat(document.getElementById('lower-limit').value);
+            const b = parseFloat(document.getElementById('upper-limit').value);
+            const n = parseInt(document.getElementById('precision').value);
+           
+            if (!func) {
+                throw new Error('Por favor ingresa una función');
+            }
+           
+            // Crear función evaluable
+            const f = createMathFunction(func);
+           
+            let result;
+            let steps = [];
+           
+            switch (currentMethod) {
+                case 'symbolic':
+                    result = await calculateSymbolic(func, a, b);
+                    break;
+                case 'trapezoidal':
+                    result = trapezoidalRule(f, a, b, n);
+                    steps = getTrapezoidalSteps(func, a, b, n);
+                    break;
+                case 'simpson':
+                    result = simpsonRule(f, a, b, n);
+                    steps = getSimpsonSteps(func, a, b, n);
+                    break;
+                case 'monte-carlo':
+                    result = monteCarloIntegration(f, a, b, n);
+                    steps = getMonteCarloSteps(func, a, b, n);
+                    break;
+            }
+           
+            displayResults(result, steps);
+           
+            // Comparar métodos si no es simbólico
+            if (currentMethod !== 'symbolic') {
+                compareNumericalMethods(f, a, b, n);
+            }
+        }
+
+        async function calculateIndefiniteIntegral() {
+            const func = document.getElementById('function-input-indef').value;
+            const variable = document.getElementById('integration-variable').value;
+           
+            if (!func) {
+                throw new Error('Por favor ingresa una función');
+            }
+           
+            try {
+                // Intentar integración simbólica básica
+                const result = await calculateSymbolicIndefinite(func, variable);
+                displayIndefiniteResult(result);
+            } catch (error) {
+                throw new Error('No se pudo calcular la integral indefinida: ' + error.message);
+            }
+        }
+
+        function createMathFunction(expression) {
+            // Preparar la expresión para math.js
+            let mathExpr = expression
+                .replace(/\^/g, '^')
+                .replace(/ln/g, 'log')
+                .replace(/log10/g, 'log10')
+                .replace(/pi/g, 'pi')
+                .replace(/e(?![a-zA-Z])/g, 'e');
+           
+            return function(x) {
+                try {
+                    const scope = { x: x, pi: Math.PI, e: Math.E };
+                    return math.evaluate(mathExpr, scope);
+                } catch (e) {
+                    throw new Error('Error evaluando la función en x = ' + x);
+                }
+            };
+        }
+
+        async function calculateSymbolic(func, a, b) {
+            // Para fines de demostración, calcularemos numéricamente con alta precisión
+            const f = createMathFunction(func);
+            const result = simpsonRule(f, a, b, 10000);
+           
+            return {
+                value: result,
+                method: 'Aproximación numérica de alta precisión',
+                exact: false
+            };
+        }
+
+        async function calculateSymbolicIndefinite(func, variable) {
+            // Tabla básica de integrales conocidas
+            const basicIntegrals = {
+                'x': `x^2/2`,
+                'x^2': `x^3/3`,
+                'x^3': `x^4/4`,
+                '1/x': `ln(|x|)`,
+                'sin(x)': `-cos(x)`,
+                'cos(x)': `sin(x)`,
+                'exp(x)': `exp(x)`,
+                '1/(1+x^2)': `atan(x)`
+            };
+           
+            const normalizedFunc = func.replace(/\s/g, '');
+           
+            if (basicIntegrals[normalizedFunc]) {
+                return {
+                    result: basicIntegrals[normalizedFunc] + ' + C',
+                    steps: [`∫ ${func} d${variable}`, `= ${basicIntegrals[normalizedFunc]} + C`]
+                };
+            }
+           
+            throw new Error('Integral no implementada en la tabla básica');
+        }
+
+        function trapezoidalRule(f, a, b, n) {
+            const h = (b - a) / n;
+            let sum = (f(a) + f(b)) / 2;
+           
+            for (let i = 1; i < n; i++) {
+                sum += f(a + i * h);
+            }
+           
+            return sum * h;
+        }
+
+        function simpsonRule(f, a, b, n) {
+            if (n % 2 === 1) n++; // Asegurar que n sea par
+           
+            const h = (b - a) / n;
+            let sum = f(a) + f(b);
+           
+            for (let i = 1; i < n; i++) {
+                const x = a + i * h;
+                sum += f(x) * (i % 2 === 0 ? 2 : 4);
+            }
+           
+            return sum * h / 3;
+        }
+
+        function monteCarloIntegration(f, a, b, n) {
+            // Encontrar el valor máximo aproximado de la función
+            let maxVal = 0;
+            for (let i = 0; i <= 100; i++) {
+                const x = a + (b - a) * i / 100;
+                const val = Math.abs(f(x));
+                if (val > maxVal) maxVal = val;
+            }
+           
+            let count = 0;
+            for (let i = 0; i < n; i++) {
+                const x = a + Math.random() * (b - a);
+                const y = Math.random() * maxVal;
+                if (y <= Math.abs(f(x))) {
+                    count++;
+                }
+            }
+           
+            return (count / n) * (b - a) * maxVal * (f(a + (b-a)/2) >= 0 ? 1 : -1);
+        }
+
+        function getTrapezoidalSteps(func, a, b, n) {
+            const h = (b - a) / n;
+            return [
+                `Método Trapezoidal:`,
+                `h = (b - a) / n = (${b} - ${a}) / ${n} = ${h.toFixed(4)}`,
+                `∫[${a}, ${b}] ${func} dx ≈ (h/2)[f(a) + 2∑f(xi) + f(b)]`,
+                `Número de subdivisiones: ${n}`,
+                `Ancho de cada trapecio: ${h.toFixed(4)}`
+            ];
+        }
+
+        function getSimpsonSteps(func, a, b, n) {
+            const h = (b - a) / n;
+            return [
+                `Método de Simpson:`,
+                `h = (b - a) / n = (${b} - ${a}) / ${n} = ${h.toFixed(4)}`,
+                `∫[${a}, ${b}] ${func} dx ≈ (h/3)[f(a) + 4∑f(x_impares) + 2∑f(x_pares) + f(b)]`,
+                `Número de subdivisiones: ${n} (debe ser par)`,
+                `Ancho de cada subintervalo: ${h.toFixed(4)}`
+            ];
+        }
+
+        function getMonteCarloSteps(func, a, b, n) {
+            return [
+                `Método Monte Carlo:`,
+                `Intervalo: [${a}, ${b}]`,
+                `Número de puntos aleatorios: ${n}`,
+                `Se generan puntos aleatorios y se cuenta cuántos están bajo la curva`,
+                `Área ≈ (puntos bajo la curva / total de puntos) × área del rectángulo`
+            ];
+        }
+
+        function compareNumericalMethods(f, a, b, n) {
+            try {
+                const trapezoidal = trapezoidalRule(f, a, b, n);
+                const simpson = simpsonRule(f, a, b, n);
+                const monteCarlo = monteCarloIntegration(f, a, b, Math.min(n, 10000));
+               
+                const comparison = `
+                    <div class="step">
+                        <strong>Método Trapezoidal:</strong> ${trapezoidal.toFixed(6)}
+                    </div>
+                    <div class="step">
+                        <strong>Método de Simpson:</strong> ${simpson.toFixed(6)}
+                    </div>
+                    <div class="step">
+                        <strong>Método Monte Carlo:</strong> ${monteCarlo.toFixed(6)}
+                    </div>
+                    <div class="step">
+                        <strong>Diferencia T-S:</strong> ${Math.abs(trapezoidal - simpson).toFixed(6)}
+                    </div>
+                `;
+               
+                document.getElementById('methods-comparison').innerHTML = comparison;
+                document.getElementById('numerical-comparison').style.display = 'block';
+               
+                // Análisis de error
+                const errorAnalysis = `
+                    <div class="step">
+                        El método de Simpson generalmente es más preciso que el trapezoidal.
+                    </div>
+                    <div class="step">
+                        Error teórico del método trapezoidal: O(h²)
+                    </div>
+                    <div class="step">
+                        Error teórico del método de Simpson: O(h⁴)
+                    </div>
+                    <div class="step">
+                        Monte Carlo converge más lentamente: O(1/√n)
+                    </div>
+                `;
+               
+                document.getElementById('error-details').innerHTML = errorAnalysis;
+                document.getElementById('error-analysis').style.display = 'block';
+               
+            } catch (error) {
+                console.error('Error en comparación de métodos:', error);
+            }
+        }
+
+        function displayResults(result, steps) {
+            const mainResult = document.getElementById('main-result');
+            mainResult.className = 'result-container success';
+           
+            let resultText;
+            if (typeof result === 'object') {
+                resultText = `
+                    <div class="result-title">Resultado:</div>
+                    <div><strong>Valor:</strong> ${result.value.toFixed(8)}</div>
+                    <div><strong>Método:</strong> ${result.method}</div>
+                    ${result.exact ? '<div><strong>Resultado exacto</strong></div>' : '<div><strong>Aproximación numérica</strong></div>'}
+                `;
+            } else {
+                resultText = `
+                    <div class="result-title">Resultado:</div>
+                    <div><strong>Valor:</strong> ${result.toFixed(8)}</div>
+                    <div><strong>Método:</strong> ${currentMethod}</div>
+                `;
+            }
+           
+            mainResult.innerHTML = resultText;
+           
+            // Mostrar pasos si están disponibles
+            if (steps && steps.length > 0) {
+                const stepsContainer = document.getElementById('solution-steps');
+                stepsContainer.innerHTML = steps.map(step => `<div class="step">${step}</div>`).join('');
+                document.getElementById('steps-result').style.display = 'block';
+            }
+        }
+
+        function displayIndefiniteResult(result) {
+            const mainResult = document.getElementById('main-result');
+            mainResult.className = 'result-container success';
+           
+            mainResult.innerHTML = `
+                <div class="result-title">Integral Indefinida:</div>
+                <div><strong>∫ f(x) dx = ${result.result}</strong></div>
+            `;
+           
+            if (result.steps) {
+                const stepsContainer = document.getElementById('solution-steps');
+                stepsContainer.innerHTML = result.steps.map(step => `<div class="step">${step}</div>`).join('');
+                document.getElementById('steps-result').style.display = 'block';
+            }
+        }
+
+        function showError(message) {
+            const mainResult = document.getElementById('main-result');
+            mainResult.className = 'result-container error';
+            mainResult.innerHTML = `
+                <div class="result-title">Error:</div>
+                <div>${message}</div>
+            `;
+        }
+
+        function clearResults() {
+            document.getElementById('main-result').className = 'result-container';
+            document.getElementById('main-result').innerHTML = `
+                <div class="result-title">Resultado:</div>
+                <div>Calculando...</div>
+            `;
+           
+            document.getElementById('steps-result').style.display = 'none';
+            document.getElementById('numerical-comparison').style.display = 'none';
+            document.getElementById('error-analysis').style.display = 'none';
+        }
+
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+            document.getElementById('result-area').style.display = show ? 'none' : 'block';
+        }
+
+        async function generateGraph() {
+            try {
+                const isDefinite = currentTab === 'definite';
+                const func = document.getElementById(isDefinite ? 'function-input' : 'function-input-indef').value;
+               
+                if (!func) {
+                    throw new Error('Por favor ingresa una función');
+                }
+               
+                const f = createMathFunction(func);
+               
+                // Determinar el rango para graficar
+                let xMin, xMax;
+                if (isDefinite) {
+                    const a = parseFloat(document.getElementById('lower-limit').value);
+                    const b = parseFloat(document.getElementById('upper-limit').value);
+                    const range = Math.abs(b - a);
+                    xMin = Math.min(a, b) - range * 0.2;
+                    xMax = Math.max(a, b) + range * 0.2;
+                } else {
+                    xMin = -10;
+                    xMax = 10;
+                }
+               
+                // Generar puntos para la gráfica
+                const xValues = [];
+                const yValues = [];
+                const numPoints = 1000;
+               
+                for (let i = 0; i <= numPoints; i++) {
+                    const x = xMin + (xMax - xMin) * i / numPoints;
+                    try {
+                        const y = f(x);
+                        if (isFinite(y)) {
+                            xValues.push(x);
+                            yValues.push(y);
+                        }
+                    } catch (e) {
+                        // Ignorar puntos donde la función no está definida
+                    }
+                }
+               
+                const traces = [{
+                    x: xValues,
+                    y: yValues,
+                    type: 'scatter',
+                    mode: 'lines',
+                    name: `f(x) = ${func}`,
+                    line: { color: '#3498db', width: 3 }
+                }];
+               
+                // Agregar área bajo la curva para integrales definidas
+                if (isDefinite) {
+                    const a = parseFloat(document.getElementById('lower-limit').value);
+                    const b = parseFloat(document.getElementById('upper-limit').value);
+                   
+                    const fillX = [];
+                    const fillY = [];
+                   
+                    for (let i = 0; i <= 200; i++) {
+                        const x = a + (b - a) * i / 200;
+                        try {
+                            const y = f(x);
+                            if (isFinite(y)) {
+                                fillX.push(x);
+                                fillY.push(y);
+                            }
+                        } catch (e) {
+                            // Ignorar puntos problemáticos
+                        }
+                    }
+                   
+                    traces.push({
+                        x: fillX,
+                        y: fillY,
+                        fill: 'tozeroy',
+                        type: 'scatter',
+                        mode: 'none',
+                        name: `Área [${a}, ${b}]`,
+                        fillcolor: 'rgba(52, 152, 219, 0.3)'
+                    });
+                   
+                    // Líneas verticales en los límites
+                    traces.push({
+                        x: [a, a],
+                        y: [0, f(a)],
+                        type: 'scatter',
+                        mode: 'lines',
+                        name: `x = ${a}`,
+                        line: { color: '#e74c3c', width: 2, dash: 'dash' }
+                    });
+                   
+                    traces.push({
+                        x: [b, b],
+                        y: [0, f(b)],
+                        type: 'scatter',
+                        mode: 'lines',
+                        name: `x = ${b}`,
+                        line: { color: '#e74c3c', width: 2, dash: 'dash' }
+                    });
+                }
+               
+                const layout = {
+                    title: {
+                        text: `Gráfica de f(x) = ${func}`,
+                        font: { size: 18, color: '#2c3e50' }
+                    },
+                    xaxis: {
+                        title: 'x',
+                        gridcolor: '#ecf0f1',
+                        zerolinecolor: '#34495e',
+                        zerolinewidth: 2
+                    },
+                    yaxis: {
+                        title: 'f(x)',
+                        gridcolor: '#ecf0f1',
+                        zerolinecolor: '#34495e',
+                        zerolinewidth: 2
+                    },
+                    plot_bgcolor: '#ffffff',
+                    paper_bgcolor: '#ffffff',
+                    font: { family: 'Segoe UI, Arial, sans-serif' },
+                    showlegend: true,
+                    legend: {
+                        x: 0.02,
+                        y: 0.98,
+                        bgcolor: 'rgba(255, 255, 255, 0.8)',
+                        bordercolor: '#bdc3c7',
+                        borderwidth: 1
+                    }
+                };
+               
+                const config = {
+                    responsive: true,
+                    displayModeBar: true,
+                    modeBarButtonsToRemove: ['pan2d', 'lasso2d', 'select2d'],
+                    displaylogo: false
+                };
+               
+                Plotly.newPlot('function-plot', traces, layout, config);
+               
+            } catch (error) {
+                document.getElementById('function-plot').innerHTML = `
+                    <div style="text-align: center; padding: 50px; color: #e74c3c;">
+                        <h4>Error al generar la gráfica</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function clearAll() {
+            // Limpiar campos de entrada
+            document.getElementById('function-input').value = '';
+            document.getElementById('function-input-indef').value = '';
+            document.getElementById('lower-limit').value = '0';
+            document.getElementById('upper-limit').value = '1';
+            document.getElementById('precision').value = '1000';
+            document.getElementById('integration-variable').value = 'x';
+           
+            // Limpiar resultados
+            document.getElementById('main-result').className = 'result-container';
+            document.getElementById('main-result').innerHTML = `
+                <div class="result-title">Resultado:</div>
+                <div>Ingresa una función y presiona "Calcular Integral"</div>
+            `;
+           
+            document.getElementById('steps-result').style.display = 'none';
+            document.getElementById('numerical-comparison').style.display = 'none';
+            document.getElementById('error-analysis').style.display = 'none';
+           
+            // Limpiar gráfica
+            document.getElementById('function-plot').innerHTML = '';
+           
+            // Actualizar previews
+            updateFunctionPreview();
+            updateIntegralFormula();
+        }
+
+        // Funciones auxiliares para mejorar la experiencia
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'Enter') {
+                calculateIntegral();
+            }
+        });
+
+        // Autoguardado de la última función ingresada
+        setInterval(function() {
+            const currentFunc = document.getElementById('function-input').value;
+            if (currentFunc !== lastFunction) {
+                lastFunction = currentFunc;
+                updateFunctionPreview();
+                updateIntegralFormula();
+            }
+        }, 500);
+    </script>
+</body>
+</html>
